@@ -1,6 +1,7 @@
 import "./App.css";
 import styled from "styled-components";
 import { Connect } from "./components/Connect";
+import WalletStatus from "./components/WalletStatus";
 
 const StyledAppDiv = styled.div`
   display: grid;
@@ -11,6 +12,7 @@ function App() {
   return (
     <StyledAppDiv>
       <Connect />
+      <WalletStatus />
     </StyledAppDiv>
   );
 }

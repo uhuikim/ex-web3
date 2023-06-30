@@ -12,11 +12,11 @@ export function useWeb3Connect() {
     if (isAuthorized) {
       try {
         await activate(injected, undefined, true);
+        setTried(true);
       } catch (err) {
         window.alert(`err : ${err && err.message} `);
       }
     }
-    setTried(true);
   }, [activate]);
 
   useEffect(() => {
