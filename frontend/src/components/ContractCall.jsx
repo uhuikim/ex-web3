@@ -21,12 +21,25 @@ const StyledLabel = styled.label`
     font-weight: bold;
 `;
 
+const StyledInput = styled.input`
+    padding: 0.4rem 0.6rem;
+`;
+
+const StyledButton = styled.button`
+    width: 150px;
+    height: 2rem;
+    border-radius: 1rem;
+    border-color: blue;
+    cursor: pointer;
+`;
+
 const ContractCall = () => {
     const { active, library } = useWeb3React();
     const [greetingContract, setGreetingContract] = useState();
     const [greetingContractAddr, setGreetingContractAddr] = useState("");
     const [singer, setSigner] = useState();
     const [greeting, setGreeting] = useState("");
+    const [greetingInput, setGreetingInput] = useState("");
 
     useEffect(() => {
         if (!library) {
@@ -57,12 +70,60 @@ const ContractCall = () => {
                 window.alert(`Greeting deployed to : ${greetingContract.address}`);
             } catch (err) {
                 console.error(err);
-                window.alert("error:", err && err.message ? `${err.message}` : "");
+                window.alert("error:" + err && err.message ? `${err.message}` : "");
             }
         }
 
         deployGreetingContract();
     };
+
+    useEffect(() => {
+        if (!greetingContract) {
+            return;
+        }
+        async function getGreeting(greetingContract) {
+            const _greeting = await greetingContract.greet();
+
+            if (_greeting !== greeting) {
+                setGreeting(_greeting);
+            }
+        }
+
+        getGreeting(greetingContract);
+    }, [greeting, greetingContract]);
+
+    const handleGreetingChange = (e) => {
+        setGreetingInput(e.target.value);
+    };
+
+    const handleGreetingSubmit = () => {
+        if (!greetingContract) {
+            window.alert("Undefined greeting Contract!");
+            return;
+        }
+
+        if (!greetingInput) {
+            window.alert("Greeting cannot be empty");
+        }
+
+        async function submitGreeting(greetingContract) {
+            try {
+                const setGreetingTxn = await greetingContract.setGreeting(greetingInput);
+                await setGreetingTxn.wait();
+
+                const newGreeting = await greetingContract.greet();
+                window.alert(`Success : ${newGreeting}`);
+
+                if (newGreeting !== greeting) {
+                    setGreeting(newGreeting);
+                }
+            } catch (err) {
+                window.alert("error:" + err && err.message ? `${err.message}` : "");
+            }
+        }
+        submitGreeting(greetingContract);
+    };
+
     return (
         <>
             <StyledDeployContractButton disabled={!active || greetingContract ? true : false} onClick={handelDeployContract}>
@@ -75,6 +136,13 @@ const ContractCall = () => {
             <StyledGreetingDiv>
                 <StyledLabel>Greeting :</StyledLabel>
                 <div> {greeting ? greeting : "Contract not yet deployed"}</div>
+            </StyledGreetingDiv>
+            <StyledGreetingDiv>
+                <StyledLabel>Set new Greeting</StyledLabel>
+                <StyledInput id="greetingInput" type="text" placeholder={greeting ? "" : "Contract not yet deployed"} onChange={handleGreetingChange} />
+                <StyledButton disabled={!active || !greetingContract ? true : false} onClick={handleGreetingSubmit}>
+                    Submit
+                </StyledButton>
             </StyledGreetingDiv>
         </>
     );
